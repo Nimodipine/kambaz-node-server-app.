@@ -29,8 +29,17 @@ export function deleteCourse(courseId) {
 export function updateCourse(courseId, courseUpdates) {
     const { courses } = Database;
     const course = courses.find((course) => course._id === courseId);
+
+    if (!course) {
+        console.warn(`Course with ID ${courseId} not found.`);
+        return null; // or throw an error
+    }
+
     Object.assign(course, courseUpdates);
     return course;
 }
 
-
+export function findCoursesByIds(ids) {
+    const { courses } = Database;
+    return courses.filter((course) => ids.includes(course._id));
+}

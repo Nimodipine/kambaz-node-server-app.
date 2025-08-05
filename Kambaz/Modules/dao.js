@@ -6,18 +6,34 @@ export function createModule(module) {
     Database.modules = [...Database.modules, newModule];
     return newModule;
 }
+
 export function findModulesForCourse(courseId) {
     return Database.modules.filter((m) => m.course === courseId);
 }
 
-export function deleteModule(moduleId) {
-    const { modules } = Database;
-    Database.modules = modules.filter((module) => module._id !== moduleId);
+export async function deleteModule(moduleId) {
+
+    const before = Database.modules.length;
+    Database.modules = Database.modules.filter((m) => m._id !== moduleId);
+    const after = Database.modules.length;
+
+    const deleted = before !== after;
+    return deleted;
 }
 
-export function updateModule(moduleId, moduleUpdates) {
-    const { modules } = Database;
-    const module = modules.find((module) => module._id === moduleId);
-    Object.assign(module, moduleUpdates);
-    return module;
+// Make this function async to match the route expectation  
+export async function updateModule(moduleId, moduleUpdates) {
+    const index = Database.modules.findIndex((m) => m._id === moduleId);
+
+    if (index === -1) {
+        console.log("Module not found");
+        return null;
+    }
+
+    Database.modules[index] = {
+        ...Database.modules[index],
+        ...moduleUpdates,
+    };
+
+    return Database.modules[index];
 }

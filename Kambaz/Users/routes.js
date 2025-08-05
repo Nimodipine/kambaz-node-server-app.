@@ -68,13 +68,19 @@ export default function UserRoutes(app) {
             }
             userId = currentUser._id;
         }
-        const courses = courseDao.findCoursesForEnrolledUser(userId);
+        const userEnrollments = enrollmentsDao.findEnrollmentsByUser(userId);
+        const courseIds = userEnrollments.map(e => e.course);
+        const courses = courseDao.findCoursesByIds(courseIds);
         res.json(courses);
     };
     app.get("/api/users/:userId/courses", findCoursesForEnrolledUser);
 
     const createCourse = (req, res) => {
         const currentUser = req.session["currentUser"];
+        if (!currentUser) {
+            return res.status(401).json({ message: "Not signed in" });
+        }
+
         const newCourse = courseDao.createCourse(req.body);
         enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
         res.json(newCourse);
