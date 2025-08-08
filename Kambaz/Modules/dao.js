@@ -17,17 +17,5 @@ export async function deleteModule(moduleId) {
 
 // Make this function async to match the route expectation  
 export async function updateModule(moduleId, moduleUpdates) {
-    const index = Database.modules.findIndex((m) => m._id === moduleId);
-
-    if (index === -1) {
-        console.log("Module not found");
-        return null;
-    }
-
-    Database.modules[index] = {
-        ...Database.modules[index],
-        ...moduleUpdates,
-    };
-
-    return Database.modules[index];
+    return model.updateOne({ _id: moduleId }, moduleUpdates);
 }
