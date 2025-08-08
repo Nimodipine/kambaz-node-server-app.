@@ -2,9 +2,10 @@ import model from "./model.js";
 import { v4 as uuidv4 } from "uuid";
 
 export const createUser = (user) => {
-    const newUser = { ...user, _id: uuidv4() };
-    return model.create(User);
+    const newUser = { ...user, _id: uuidv4() }; // Generate ID and fix variable name
+    return model.create(newUser); // Use newUser, not undefined 'newUser'
 };
+
 export const findAllUsers = () => model.find();
 export const findUserById = (userId) => model.findById(userId);
 export const findUserByUsername = (username) => model.findOne({ username: username });
@@ -18,4 +19,3 @@ export const findUsersByPartialName = (partialName) => {
         $or: [{ firstName: { $regex: regex } }, { lastName: { $regex: regex } }],
     });
 };
-
