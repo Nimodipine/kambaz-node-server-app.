@@ -8,7 +8,7 @@ export function createModule(module) {
 }
 
 export function findModulesForCourse(courseId) {
-    return Database.modules.filter((m) => m.course === courseId);
+    return model.find({ course: courseId });
 }
 
 export async function deleteModule(moduleId) {
