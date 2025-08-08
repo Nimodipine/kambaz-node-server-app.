@@ -23,8 +23,29 @@ const app = express();
 // Middleware
 app.use(cors({
     credentials: true,
-    origin: process.env.NETLIFY_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+        // Allow local dev
+        if (!origin || origin === "http://localhost:5173") {
+            return callback(null, true);
+        }
+
+        const allowedOrigins = [
+            "https://a6--kambaz-react-web-app-cs5610-sm2025.netlify.app", // main prod deploy
+            /^https:\/\/[a-z0-9\-]+--kambaz-react-web-app-cs5610-sm2025\.netlify\.app$/ // all deploy previews
+        ];
+
+        const isAllowed = allowedOrigins.some((entry) =>
+            typeof entry === "string" ? origin === entry : entry.test(origin)
+        );
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(new Error(`CORS error: Origin ${origin} not allowed`));
+        }
+    },
 }));
+
 
 app.use(express.json());
 
