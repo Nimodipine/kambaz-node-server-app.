@@ -60,14 +60,13 @@ const sessionOptions = {
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        httpOnly: true,
         sameSite: "none"
     }
 };
 
-if (process.env.NODE_ENV !== "development") {
-    sessionOptions.proxy = true;
-}
 app.use(session(sessionOptions));
 
 
