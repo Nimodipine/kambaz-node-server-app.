@@ -52,15 +52,21 @@ export default function UserRoutes(app) {
 
 
     const signup = async (req, res) => {
-        const user = await dao.findUserByUsername(req.body.username);
-        if (user) {
-            res.status(400).json(
-                { message: "Username already in use" });
-            return;
+        console.log("Signup request body:", req.body);
+        try {
+            const user = await dao.findUserByUsername(req.body.username);
+            if (user) {
+                res.status(400).json({ message: "Username already in use" });
+                return;
+            }
+            const currentUser = await dao.createUser(req.body);
+            req.session["currentUser"] = currentUser;
+            console.log("User created successfully:", currentUser);
+            res.json(currentUser);
+        } catch (error) {
+            console.error("Signup error:", error);
+            res.status(500).json({ message: "Internal server error", error: error.message });
         }
-        const currentUser = await dao.createUser(req.body);
-        req.session["currentUser"] = currentUser;
-        res.json(currentUser);
     };
 
     const signin = async (req, res) => {
@@ -85,9 +91,11 @@ export default function UserRoutes(app) {
     };
 
     const profile = async (req, res) => {
-        console.log("SESSION AT PROFILE:", req.session);
+        console.log("Session data:", req.session);
+        console.log("Current user:", req.session["currentUser"]);
         const currentUser = req.session["currentUser"];
         if (!currentUser) {
+            console.log("No current user in session");
             res.sendStatus(401);
             return;
         }

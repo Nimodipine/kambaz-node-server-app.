@@ -2,7 +2,8 @@ import model from "./model.js";
 import { v4 as uuidv4 } from "uuid";
 
 export const createUser = (user) => {
-    return model.create(newUser);
+    const newUser = { ...user, _id: uuidv4() };
+    return model.create(User);
 };
 export const findAllUsers = () => model.find();
 export const findUserById = (userId) => model.findById(userId);
