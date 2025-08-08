@@ -3,6 +3,18 @@ import * as courseDao from "../Courses/dao.js";
 import * as enrollmentsDao from "../Enrollments/dao.js";
 
 export default function UserRoutes(app) {
+    const debugUsers = async (req, res) => {
+        try {
+            const allUsers = await dao.findAllUsers();
+            console.log("All users in database:", allUsers);
+            res.json(allUsers);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            res.status(500).json({ error: error.message });
+        }
+    };
+    app.get("/api/debug/users", debugUsers); // Add this line
+
     const createUser = async (req, res) => {
         const user = await dao.createUser(req.body);
         res.json(user);
