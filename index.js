@@ -20,6 +20,12 @@ const CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING || "mongodb://1
 mongoose.connect(CONNECTION_STRING);
 const app = express();
 
+mongoose.connect(CONNECTION_STRING).then(() => {
+    console.log("✅ Connected to MongoDB!");
+}).catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+});
+
 // Middleware
 app.use(cors({
     credentials: true,

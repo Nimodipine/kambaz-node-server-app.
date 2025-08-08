@@ -32,13 +32,13 @@ export default function CourseRoutes(app) {
         res.json(modules);
     };
 
-    const createModuleForCourse = (req, res) => {
+    const createModuleForCourse = async (req, res) => {
         const { courseId } = req.params;
         const module = {
             ...req.body,
             course: courseId,
         };
-        const newModule = modulesDao.createModule(module);
+        const newModule = await modulesDao.createModule(module);
         res.send(newModule);
     };
 

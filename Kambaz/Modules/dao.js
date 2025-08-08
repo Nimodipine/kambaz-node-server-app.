@@ -1,10 +1,10 @@
 import Database from "../Database/index.js";
 import { v4 as uuidv4 } from "uuid";
+import model from "./model.js";
 
 export function createModule(module) {
     const newModule = { ...module, _id: uuidv4() };
-    Database.modules = [...Database.modules, newModule];
-    return newModule;
+    return model.create(newModule);
 }
 
 export function findModulesForCourse(courseId) {
@@ -12,13 +12,7 @@ export function findModulesForCourse(courseId) {
 }
 
 export async function deleteModule(moduleId) {
-
-    const before = Database.modules.length;
-    Database.modules = Database.modules.filter((m) => m._id !== moduleId);
-    const after = Database.modules.length;
-
-    const deleted = before !== after;
-    return deleted;
+    return model.deleteOne({ _id: moduleId });
 }
 
 // Make this function async to match the route expectation  
