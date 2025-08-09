@@ -148,15 +148,17 @@ export default function UserRoutes(app) {
 
     app.get("/api/users/:userId/courses", findCoursesForUser);
 
-    const createCourse = (req, res) => {
+    const createCourse = async (req, res) => {
         const currentUser = req.session["currentUser"];
         if (!currentUser) {
             return res.status(401).json({ message: "Not signed in" });
         }
 
-        const newCourse = courseDao.createCourse(req.body);
-        enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
-        res.json(newCourse);
+        const course = await courseDao.createCourse(req.body);  // <-- await
+        if (course && course._id) {
+            await enrollmentsDao.enrollUserInCourse(currentUser._id, course._id); // <-- await
+        }
+        res.json(course);
     };
 
     const enrollUserInCourse = async (req, res) => {
