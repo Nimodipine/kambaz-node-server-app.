@@ -28,16 +28,30 @@ mongoose.connect(CONNECTION_STRING).then(() => {
     console.error("❌ MongoDB connection error:", err);
 });
 
+app.set("trust proxy", 1);
+
+const allowedOrigins = [
+    "http://localhost:5173",
+];
+const originRegexes = [/\.netlify\.app$/];
+
 // Middleware
 app.use(cors({
     credentials: true,
-    origin: process.env.NETLIFY_URL || "http://localhost:5173",
+    origin: (origin, cb) => {
+        if (!origin) return cb(null, true); // health checks, curl
+        if (allowedOrigins.includes(origin) || originRegexes.some(rx => rx.test(origin))) {
+            return cb(null, true);
+        }
+        return cb(new Error(`Not allowed by CORS: ${origin}`));
+    },
 }));
 
 
 app.use(express.json());
 
 const sessionOptions = {
+    name: "sid",
     secret: process.env.SESSION_SECRET || "kambaz",
     resave: false,
     saveUninitialized: false,
