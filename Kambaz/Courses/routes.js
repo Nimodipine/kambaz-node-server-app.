@@ -2,6 +2,7 @@ import * as dao from "./dao.js";
 import * as modulesDao from "../Modules/dao.js";
 import * as enrollmentsDao from "../Enrollments/dao.js";
 
+
 export default function CourseRoutes(app) {
     const findAllCourses = async (req, res) => {
         const courses = await dao.findAllCourses();
@@ -10,16 +11,16 @@ export default function CourseRoutes(app) {
 
     const createCourse = async (req, res) => {
         try {
-            console.log('Routes: Creating course with body:', req.body);
+            console.log('Routes: Creating course with body:', req.body); // Debug log
 
             const course = await dao.createCourse(req.body);
-            console.log('Routes: Course created:', course);
-            console.log('Routes: Course _id:', course?._id);
+            console.log('Routes: Course created:', course); // Debug log
+            console.log('Routes: Course _id:', course?._id); // Debug log
 
             const currentUser = req.session["currentUser"];
-            console.log('Routes: Current user:', currentUser);
+            console.log('Routes: Current user:', currentUser); // Debug log
 
-            // Auto-enroll the creator in the course
+            // ✅ Add validation before enrollment
             if (currentUser && course && course._id) {
                 console.log('Routes: Enrolling user', currentUser._id, 'in course', course._id);
                 await enrollmentsDao.enrollUserInCourse(currentUser._id, course._id);
@@ -45,20 +46,8 @@ export default function CourseRoutes(app) {
 
     const deleteCourse = async (req, res) => {
         const { courseId } = req.params;
-        try {
-            // First, remove all enrollments for this course
-            await enrollmentsDao.unenrollAllUsersFromCourse(courseId);
-
-            // Then delete the course itself
-            const status = await dao.deleteCourse(courseId);
-            res.send(status);
-        } catch (error) {
-            console.error('Error deleting course:', error);
-            res.status(500).json({
-                error: 'Failed to delete course',
-                message: error.message
-            });
-        }
+        const status = await dao.deleteCourse(courseId);
+        res.send(status);
     };
 
     const updateCourse = async (req, res) => {
