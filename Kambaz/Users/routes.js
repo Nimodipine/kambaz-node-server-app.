@@ -60,7 +60,6 @@ export default function UserRoutes(app) {
         }
         res.json(currentUser);
     };
-    app.put("/api/users/:userId", updateUser);
 
 
     const signup = async (req, res) => {
@@ -95,7 +94,6 @@ export default function UserRoutes(app) {
         }
     };
 
-    app.post("/api/users/signin", signin);
 
     const signout = (req, res) => {
         req.session.destroy();
