@@ -5,13 +5,6 @@ export function findAllCourses() {
     return model.find();
 }
 
-export function findCoursesForEnrolledUser(userId) {
-    const { courses, enrollments } = Database;
-    const enrolledCourses = courses.filter((course) =>
-        enrollments.some((enrollment) => enrollment.user === userId && enrollment.course === course._id));
-    return enrolledCourses;
-}
-
 export function createCourse(course) {
     const newCourse = { ...course, _id: uuidv4() };
     return model.create(newCourse);
@@ -27,6 +20,5 @@ export function updateCourse(courseId, courseUpdates) {
 }
 
 export function findCoursesByIds(ids) {
-    const { courses } = Database;
-    return courses.filter((course) => ids.includes(course._id));
+    return model.find({ _id: { $in: ids } });
 }

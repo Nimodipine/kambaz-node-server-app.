@@ -18,6 +18,8 @@ import EnrollmentRoutes from "./Kambaz/Enrollments/routes.js";
 
 const CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz"
 mongoose.connect(CONNECTION_STRING);
+
+const isProd = process.env.NODE_ENV === "production";
 const app = express();
 
 mongoose.connect(CONNECTION_STRING).then(() => {
@@ -29,27 +31,7 @@ mongoose.connect(CONNECTION_STRING).then(() => {
 // Middleware
 app.use(cors({
     credentials: true,
-    origin: (origin, callback) => {
-        // Allow local dev
-        if (!origin || origin === "http://localhost:5173") {
-            return callback(null, true);
-        }
-
-        const allowedOrigins = [
-            "https://a6--kambaz-react-web-app-cs5610-sm2025.netlify.app", // main prod deploy
-            /^https:\/\/[a-z0-9\-]+--kambaz-react-web-app-cs5610-sm2025\.netlify\.app$/ // all deploy previews
-        ];
-
-        const isAllowed = allowedOrigins.some((entry) =>
-            typeof entry === "string" ? origin === entry : entry.test(origin)
-        );
-
-        if (isAllowed) {
-            callback(null, true);
-        } else {
-            callback(new Error(`CORS error: Origin ${origin} not allowed`));
-        }
-    },
+    origin: process.env.NETLIFY_URL || "http://localhost:5173",
 }));
 
 
@@ -60,10 +42,10 @@ const sessionOptions = {
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         httpOnly: true,
-        sameSite: "none"
+        maxAge: 24 * 60 * 60 * 1000,
     }
 };
 
