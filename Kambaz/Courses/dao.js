@@ -5,9 +5,14 @@ export function findAllCourses() {
     return model.find();
 }
 
-export function createCourse(course) {
+export async function createCourse(course) {
     const newCourse = { ...course, _id: uuidv4() };
-    return model.create(newCourse);
+    console.log('DAO: Creating course with _id:', newCourse._id); // Debug log
+
+    const createdCourse = await model.create(newCourse);
+    console.log('DAO: Course created successfully:', createdCourse); // Debug log
+
+    return createdCourse;
 
 }
 

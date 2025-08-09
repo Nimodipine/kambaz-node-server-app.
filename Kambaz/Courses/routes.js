@@ -10,14 +10,39 @@ export default function CourseRoutes(app) {
     };
 
     const createCourse = async (req, res) => {
-        const course = await dao.createCourse(req.body);
-        const currentUser = req.session["currentUser"];
-        if (currentUser) {
-            await enrollmentsDao.enrollUserInCourse(currentUser._id, course._id);
-        }
-        res.json(course);
-    };
+        try {
+            console.log('Routes: Creating course with body:', req.body); // Debug log
 
+            const course = await dao.createCourse(req.body);
+            console.log('Routes: Course created:', course); // Debug log
+            console.log('Routes: Course _id:', course?._id); // Debug log
+
+            const currentUser = req.session["currentUser"];
+            console.log('Routes: Current user:', currentUser); // Debug log
+
+            // ✅ Add validation before enrollment
+            if (currentUser && course && course._id) {
+                console.log('Routes: Enrolling user', currentUser._id, 'in course', course._id);
+                await enrollmentsDao.enrollUserInCourse(currentUser._id, course._id);
+                console.log('Routes: Enrollment successful');
+            } else {
+                console.warn('Routes: Skipping enrollment - validation failed:', {
+                    hasCurrentUser: !!currentUser,
+                    currentUserId: currentUser?._id,
+                    hasCourse: !!course,
+                    courseId: course?._id
+                });
+            }
+
+            res.json(course);
+        } catch (error) {
+            console.error('Routes: Error creating course:', error);
+            res.status(500).json({
+                error: 'Failed to create course',
+                message: error.message
+            });
+        }
+    };
 
     const deleteCourse = async (req, res) => {
         const { courseId } = req.params;
