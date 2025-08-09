@@ -1,30 +1,43 @@
-import db from "../Database/index.js";
 import { v4 as uuidv4 } from "uuid";
+import AssignmentModel from "./model.js";
 
-let { assignments } = db;
-
-export const findAllAssignments = () => assignments;
-
-export const findAssignmentsForCourse = (cid) =>
-    assignments.filter((a) => a.courses.includes(cid));
-
-export const createAssignment = (assignment) => {
-    const newAssignment = { ...assignment, id: uuidv4() };
-    assignments = [...assignments, newAssignment];
-    return newAssignment;
+/**
+ * Optional: normalize incoming payload so dates cast cleanly
+ * and ensure we always have a string _id.
+ */
+const normalize = (a) => {
+    const out = { ...a };
+    if (!out._id) out._id = uuidv4(); // generate string id if missing
+    // If dates arrive as "YYYY-MM-DD", Mongoose will cast them to Date automatically.
+    return out;
 };
 
-export const deleteAssignment = (assignmentId) => {
-    assignments = assignments.filter((a) => a.id !== assignmentId);
-    return assignments;
+export const findAllAssignments = async () => {
+    return AssignmentModel.find().lean();
 };
 
-export const updateAssignment = (assignmentId, updated) => {
-    assignments = assignments.map((a) =>
-        a.id === assignmentId ? { ...a, ...updated } : a
-    );
-    return assignments.find((a) => a.id === assignmentId);
+export const findAssignmentsForCourse = async (cid) => {
+    // matches docs where the array 'courses' contains cid
+    return AssignmentModel.find({ courses: cid }).lean();
 };
 
-export const findAssignmentById = (assignmentId) =>
-    assignments.find((a) => a.id === assignmentId);
+export const findAssignmentById = async (assignmentId) => {
+    return AssignmentModel.findById(assignmentId).lean();
+};
+
+export const createAssignment = async (assignment) => {
+    const doc = normalize(assignment);
+    return AssignmentModel.create(doc);
+};
+
+export const updateAssignment = async (assignmentId, updated) => {
+    return AssignmentModel.findByIdAndUpdate(assignmentId, updated, {
+        new: true,
+        runValidators: true,
+    }).lean();
+};
+
+export const deleteAssignment = async (assignmentId) => {
+    const res = await AssignmentModel.deleteOne({ _id: assignmentId });
+    return { deletedCount: res.deletedCount };
+};
