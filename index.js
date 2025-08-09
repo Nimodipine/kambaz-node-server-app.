@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import session from "express-session";
 import "dotenv/config";
@@ -16,55 +15,32 @@ import ModuleRoutes from "./Kambaz/Modules/routes.js";
 import AssignmentRoutes from "./Kambaz/Assignments/routes.js";
 import EnrollmentRoutes from "./Kambaz/Enrollments/routes.js";
 
-const CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz"
-mongoose.connect(CONNECTION_STRING);
-
-const isProd = process.env.NODE_ENV === "production";
 const app = express();
-
-mongoose.connect(CONNECTION_STRING).then(() => {
-    console.log("✅ Connected to MongoDB!");
-}).catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-});
-
-app.set("trust proxy", 1);
-
-const allowedOrigins = [
-    "http://localhost:5173",
-];
-const originRegexes = [/\.netlify\.app$/];
 
 // Middleware
 app.use(cors({
     credentials: true,
-    origin: (origin, cb) => {
-        if (!origin) return cb(null, true); // health checks, curl
-        if (allowedOrigins.includes(origin) || originRegexes.some(rx => rx.test(origin))) {
-            return cb(null, true);
-        }
-        return cb(new Error(`Not allowed by CORS: ${origin}`));
-    },
+    origin: process.env.NETLIFY_URL || "http://localhost:5173",
 }));
-
 
 app.use(express.json());
 
 const sessionOptions = {
-    name: "sid",
     secret: process.env.SESSION_SECRET || "kambaz",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-        secure: isProd,
-        sameSite: isProd ? "none" : "lax",
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-    }
 };
 
-app.use(session(sessionOptions));
+if (process.env.NODE_ENV !== "development") {
+    sessionOptions.proxy = true;
+    sessionOptions.cookie = {
+        sameSite: "none",
+        secure: true,
+        domain: process.env.NODE_SERVER_DOMAIN,
+    };
+}
 
+app.use(session(sessionOptions));
 
 // Routes (after middleware!)
 AssignmentRoutes(app);
