@@ -84,6 +84,22 @@ export default function CourseRoutes(app) {
         res.json(courses);
     };
 
+    const findUsersForCourse = async (req, res) => {
+        const { courseId } = req.params;
+        const users = await enrollmentsDao.findUsersForCourse(courseId);
+
+        // Convert Mongoose documents to JSON objects and remove sensitive fields
+        const safe = users.map(user => {
+            const plainUser = user.toJSON ? user.toJSON() : user;
+            const { password, ...safeUser } = plainUser;
+            return safeUser;
+        });
+
+        console.log('Sending users for course:', courseId, safe); // Debug log
+        res.json(safe);
+    };
+
+    app.get("/api/courses/:courseId/users", findUsersForCourse);
     app.get("/api/users/current/courses", findCurrentUsersCourses);
     app.get("/api/courses", findAllCourses);
     app.post("/api/courses", createCourse);
